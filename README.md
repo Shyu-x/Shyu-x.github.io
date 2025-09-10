@@ -1,2 +1,2 @@
 # Shyu-x.github.io
-JustASimpleWebPage
+## Just a Simple Web Page

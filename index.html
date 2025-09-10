@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的名字 | 创意技术专家</title>
+    <meta name="description" content="一个融合了前沿设计与交互动画的个人作品集网站，展示了在创意开发领域的专业技能。">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 全局样式与变量 --- */
+        :root {
+            --color-background: #1a1a1a; /* 深色背景，更具沉浸感 */
+            --color-text: #F5F5F5; /* 米白色文本 */
+            --color-primary: #C8B7A6; /* 黏土色，作为次要点缀 */
+            --color-accent: #D92027; /* 燃情红，用于交互元素 */
+            
+            --font-heading: 'Playfair Display', serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--color-background);
+            color: var(--color-text);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+            cursor: none; /* 隐藏默认光标 */
+        }
+
+        /* --- 自定义光标 --- */
+       .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--color-text);
+            border-radius: 50%;
+            left: 0;
+            top: 0;
+            pointer-events: none;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s, background-color 0.3s, border-color 0.3s;
+            z-index: 9999;
+        }
+
+       .cursor.grow {
+            width: 50px;
+            height: 50px;
+            background-color: rgba(217, 32, 39, 0.3);
+            border-color: var(--color-accent);
+        }
+
+        /* --- 3D背景画布 --- */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* --- 预加载器 --- */
+       .preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--color-background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        }
+       .preloader-text {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            color: var(--color-text);
+        }
+
+        /* --- 容器与通用布局 --- */
+       .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 0;
+        }
+
+        h1, h2 {
+            font-family: var(--font-heading);
+            font-weight: 700;
+        }
+
+        /* --- 导航栏 --- */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 2rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: linear-gradient(to bottom, rgba(26, 26, 26, 0.7), transparent);
+        }
+
+       .logo {
+            font-family: var(--font-heading);
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: var(--color-text);
+        }
+
+        nav a {
+            margin-left: 2rem;
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 500;
+            position: relative;
+        }
+        nav a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: var(--color-accent);
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s;
+        }
+        nav a:hover::after {
+            width: 100%;
+        }
+
+        /* --- Hero区域 --- */
+       .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+        }
+
+       .hero-content h1 {
+            font-size: clamp(3rem, 8vw, 6rem);
+            line-height: 1.1;
+        }
+        
+        /* 标题动画遮罩 */
+       .hero-content.line {
+            overflow: hidden;
+            display: block;
+        }
+
+       .hero-content p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 2rem 0;
+            opacity: 0; /* GSAP会控制 */
+        }
+
+       .cta-button {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background-color: var(--color-accent);
+            color: var(--color-text);
+            text-decoration: none;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: transform 0.3s;
+            opacity: 0; /* GSAP会控制 */
+        }
+       .cta-button:hover {
+            transform: scale(1.05);
+        }
+        
+        /* --- 关于我区域 --- */
+       .about {
+            background-color: rgba(40, 40, 40, 0.5);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+        }
+
+       .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+        
+       .about-text h2 {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+        }
+        
+       .about-image {
+            width: 100%;
+            height: 400px;
+            background-color: var(--color-primary); /* 占位符 */
+            border-radius: 10px;
+            overflow: hidden;
+        }
+       .about-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* --- 项目展示区域 (Bento Grid) --- */
+       .projects h2 {
+            text-align: center;
+            font-size: 3rem;
+            margin-bottom: 4rem;
+        }
+
+       .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 200px);
+            gap: 1rem;
+        }
+
+       .project-card {
+            background-color: var(--color-primary);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            color: white;
+            display: flex;
+            align-items: flex-end;
+            padding: 1.5rem;
+            background-size: cover;
+            background-position: center;
+        }
+       .project-card::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        }
+       .project-card h3 {
+            z-index: 1;
+        }
+        
+
+       .card-1 { grid-column: 1 / 4; grid-row: 1 / 3; }
+       .card-2 { grid-column: 4 / 7; grid-row: 1 / 2; }
+       .card-3 { grid-column: 4 / 6; grid-row: 2 / 3; }
+       .card-4 { grid-column: 6 / 7; grid-row: 2 / 4; }
+       .card-5 { grid-column: 1 / 3; grid-row: 3 / 5; }
+       .card-6 { grid-column: 3 / 6; grid-row: 3 / 5; }
+
+       .contact {
+            text-align: center;
+        }
+       .contact h2 {
+            font-size: 3rem;
+        }
+       .contact p {
+            margin: 1rem 0 2rem;
+            font-size: 1.2rem;
+        }
+       .contact.email-link {
+            font-size: 1.5rem;
+            color: var(--color-accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* --- 页脚 --- */
+        footer {
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 50px;
+            border-top: 1px solid rgba(245, 245, 245, 0.2);
+        }
+        
+        /* --- 响应式设计 --- */
+        @media (max-width: 768px) {
+           .about-content {
+                grid-template-columns: 1fr;
+            }
+           .bento-grid {
+                grid-template-columns: 1fr;
+                grid-auto-rows: 250px;
+            }
+           .project-card {
+                grid-column: auto!important;
+                grid-row: auto!important;
+            }
+            header nav {
+                display: none; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="cursor"></div>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="preloader">
+        <div class="preloader-text">Loading...</div>
+    </div>
+
+    <header>
+        <a href="#" class="logo">你的名字</a>
+        <nav>
+            <a href="#about">关于我</a>
+            <a href="#projects">项目</a>
+            <a href="#contact">联系</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <h1>
+                    <span class="line"><span>用代码与设计，</span></span>
+                    <span class="line"><span>构建非凡的</span></span>
+                    <span class="line"><span>数字体验。</span></span>
+                </h1>
+                <p>我是一名热衷于探索技术与美学边界的创意开发者，致力于打造流畅、美观且富有意义的互动作品。</p>
+                <a href="#projects" class="cta-button">探索我的作品</a>
+            </div>
+        </section>
+
+        <section class="about container" id="about">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>关于我</h2>
+                    <p>你好！我叫[你的名字]，是一名[你的职业，如：前端开发者/UI设计师]。我对将复杂的想法转化为优雅、直观的界面充满热情。我的技能栈包括，并始终在学习最新的行业技术。</p>
+                    <p>我相信最好的产品源于对用户的深刻理解和对细节的不懈追求。让我们一起创造一些伟大的东西吧！</p>
+                </div>
+                <div class="about-image">
+                    <img src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=2070&auto=format&fit=crop" alt="个人照片">
+                </div>
+            </div>
+        </section>
+
+        <section class="projects container" id="projects">
+            <h2>精选项目</h2>
+            <div class="bento-grid">
+                <div class="project-card card-1" style="background-image: url('https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=2070&auto=format&fit=crop');"><h3>项目一：大型Web应用</h3></div>
+                <div class="project-card card-2" style="background-image: url('https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=2070&auto=format&fit=crop');"><h3>项目二：交互式数据可视化</h3></div>
+                <div class="project-card card-3" style="background-image: url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop');"><h3>项目三：移动端App设计</h3></div>
+                <div class="project-card card-4" style="background-image: url('https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=2070&auto=format&fit=crop');"><h3>项目四：个人品牌网站</h3></div>
+                <div class="project-card card-5" style="background-image: url('https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2070&auto=format&fit=crop');"><h3>项目五：开源工具开发</h3></div>
+                <div class="project-card card-6" style="background-image: url('https://images.unsplash.com/photo-1504639725590-7ea55b6b855c?q=80&w=2070&auto=format&fit=crop');"><h3>项目六：3D网页体验</h3></div>
+            </div>
+        </section>
+
+        <section class="contact container" id="contact">
+            <h2>保持联系</h2>
+            <p>我一直在寻找新的挑战和合作机会。如果你有一个有趣的项目，或者只是想打个招呼，请随时联系我。</p>
+            <a href="mailto:your.email@example.com" class="email-link cta-button">发送邮件</a>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 你的名字. All Rights Reserved.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+    <script>
+        // --- 模块一: Three.js 粒子背景 ---
+        const initThreeJS = () => {
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('bg-canvas'), alpha: true });
+
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+            const particlesGeometry = new THREE.BufferGeometry;
+            const count = 5000;
+
+            const positions = new Float32Array(count * 3);
+            for (let i = 0; i < count * 3; i++) {
+                positions[i] = (Math.random() - 0.5) * 10;
+            }
+            particlesGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+            const particlesMaterial = new THREE.PointsMaterial({
+                size: 0.02,
+                sizeAttenuation: true,
+                color: 0xffffff,
+                transparent: true,
+                opacity: 0.5
+            });
+
+            const particles = new THREE.Points(particlesGeometry, particlesMaterial);
+            scene.add(particles);
+
+            camera.position.z = 5;
+
+            const mouse = new THREE.Vector2();
+            window.addEventListener('mousemove', (event) => {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+            });
+
+            const clock = new THREE.Clock();
+            const animate = () => {
+                const elapsedTime = clock.getElapsedTime();
+                particles.rotation.y = elapsedTime * 0.05;
+                particles.rotation.x = mouse.y * 0.1;
+                particles.rotation.y += mouse.x * 0.1;
+
+                requestAnimationFrame(animate);
+                renderer.render(scene, camera);
+            };
+            animate();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            });
+        };
+
+        // --- 模块二: 自定义光标 ---
+        const initCursor = () => {
+            const cursor = document.querySelector('.cursor');
+            const interactiveElements = document.querySelectorAll('a, button');
+
+            window.addEventListener('mousemove', e => {
+                gsap.to(cursor, { duration: 0.3, x: e.clientX, y: e.clientY });
+            });
+
+            interactiveElements.forEach(el => {
+                el.addEventListener('mouseenter', () => cursor.classList.add('grow'));
+                el.addEventListener('mouseleave', () => cursor.classList.remove('grow'));
+            });
+        };
+
+        // --- 模块三: GSAP 动画 ---
+        const initGSAPAnimations = () => {
+            gsap.registerPlugin(ScrollTrigger);
+
+            // 1. 预加载器动画
+            const preloader = document.querySelector('.preloader');
+            const preloaderText = document.querySelector('.preloader-text');
+            const tlLoader = gsap.timeline();
+            tlLoader
+               .to(preloaderText, { opacity: 0, duration: 0.5, delay: 1 })
+               .to(preloader, { y: '-100%', duration: 1, ease: 'power2.inOut' })
+               .set(preloader, { display: 'none' });
+
+            // 2. Hero区域标题动画
+            const tlHero = gsap.timeline({ delay: 1.5 }); // 等待加载器完成
+            tlHero
+               .from('.hero-content.line span', {
+                    y: 100,
+                    ease: 'power4.out',
+                    duration: 1.8,
+                    stagger: 0.25
+                })
+               .to('.hero-content p,.hero-content.cta-button', {
+                    opacity: 1,
+                    duration: 1,
+                    stagger: 0.2
+                }, "-=1");
+
+            // 3. 滚动触发动画
+            // 关于我区域
+            gsap.from('.about-text > *', {
+                scrollTrigger: {
+                    trigger: '.about',
+                    start: 'top 80%',
+                },
+                opacity: 0,
+                y: 50,
+                duration: 1,
+                stagger: 0.3
+            });
+            gsap.from('.about-image', {
+                scrollTrigger: {
+                    trigger: '.about',
+                    start: 'top 80%',
+                },
+                opacity: 0,
+                scale: 0.9,
+                duration: 1.2
+            });
+
+            // 项目展示区域
+            gsap.from('.project-card', {
+                scrollTrigger: {
+                    trigger: '.projects',
+                    start: 'top 70%',
+                },
+                opacity: 0,
+                y: 100,
+                duration: 0.8,
+                stagger: 0.15,
+                ease: 'power2.out'
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initThreeJS();
+            initCursor();
+            initGSAPAnimations();
+        });
+    </script>
+</body>
+</html>

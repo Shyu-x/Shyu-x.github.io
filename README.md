@@ -6,8 +6,7 @@
 
 欢迎来到我的个人作品集网站项目！
 
-[**🔗 在线访问 (Live Demo)**](https://www.google.com/url?sa=E&source=gmail&q=https://shyu-x.github.io/) *(请将 `shyu-x` 替换为你的实际 GitHub 用户名)*
-
+[**🔗 在线访问 (Live Demo)**](https://www.google.com/url?sa=E&source=gmail&q=https://shyu-x.github.io/) 
 -----
 
 ## ✨ 项目特性
